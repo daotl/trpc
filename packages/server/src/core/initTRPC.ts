@@ -25,9 +25,9 @@ import { PickFirstDefined, ValidateShape } from "./internals/utils";
 import { createMiddlewareFactory } from "./middleware";
 import { createRouterFactory } from "./router";
 
-type PartialRootConfigTypes = Partial<RootConfigTypes>;
+export type PartialRootConfigTypes = Partial<RootConfigTypes>;
 
-type CreateRootConfigTypesFromPartial<TTypes extends PartialRootConfigTypes> =
+export type CreateRootConfigTypesFromPartial<TTypes extends PartialRootConfigTypes> =
 	CreateRootConfigTypes<{
 		ctx: TTypes["ctx"] extends RootConfigTypes["ctx"] ? TTypes["ctx"] : object;
 		meta: TTypes["meta"] extends RootConfigTypes["meta"]

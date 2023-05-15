@@ -29,7 +29,7 @@ import {
   middlewareMarker,
 } from './utils';
 
-type CreateProcedureReturnInput<
+export type CreateProcedureReturnInput<
   TPrev extends ProcedureParams,
   TNext extends ProcedureParams,
 > = ProcedureBuilder<{
