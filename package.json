@@ -1,95 +1,172 @@
 {
-  "name": "root",
-  "private": true,
-  "engines": {
-    "node": "^18.0.0",
-    "pnpm": ">=8.0.0"
+  "name": "@trpc/server",
+  "version": "10.26.0",
+  "description": "The tRPC server library",
+  "author": "KATT",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "typings": "dist/index.d.ts",
+  "homepage": "https://trpc.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trpc/trpc.git",
+    "directory": "packages/server"
   },
-  "packageManager": "pnpm@8.5.1",
+  "eslintConfig": {
+    "overrides": [
+      {
+        "files": [
+          "src"
+        ],
+        "rules": {
+          "explicit-module-boundary-types": "off",
+          "no-restricted-imports": [
+            "error",
+            "@trpc/server"
+          ]
+        }
+      }
+    ]
+  },
   "scripts": {
-    "build": "turbo --filter=\"@trpc/*\" --filter=\"!@trpc/tests\" build",
-    "build-www": "turbo --filter www build",
-    "dev": "turbo --filter=\"@trpc/*\" dev",
-    "dev-www": "turbo --filter www dev",
-    "test": "FORCE_COLOR=1 turbo --filter \"@trpc/tests\" test",
-    "test-watch": "cd packages/tests && pnpm test-watch",
-    "vitest": "cd packages/tests && pnpm vitest",
-    "oldlint": "eslint --cache --ext \".js,.ts,.tsx\" --ignore-path .gitignore . --report-unused-disable-directives",
-    "lint": "turbo lint",
-    "lint-fix": "turbo lint -- --fix && manypkg fix",
-    "format": "prettier \"**/*\" --ignore-unknown",
-    "format:write": "pnpm format --write --list-different",
-    "lint-prune": "! ts-prune | grep -v \"used in module\"",
-    "clean": "find . -name node_modules -o -name .turbo -o -name .next -o -name dist -type d -prune | xargs rm -rf",
-    "codegen:override-prisma": "tsx scripts/addPrismaOverrides.ts",
-    "codegen": "run-p codegen:*",
-    "prepublish": "pnpm build",
-    "postinstall": "pnpm codegen",
-    "prepack": "tsx scripts/version.ts",
-    "version": "tsx scripts/version.ts",
-    "release": "changeset publish",
-    "version:canary": "changeset version --snapshot canary",
-    "release:canary": "changeset publish --tag canary",
-    "commit-date": "git log -n 1 --date=format:'%Y-%m-%d-%H-%M-%S' --pretty=format:'%ad'",
-    "canary-preid": "echo \"$(pnpm --silent current-branch)-$(pnpm --silent commit-date)\"",
-    "current-branch": "echo \"$(git rev-parse --abbrev-ref HEAD)\" | sed -E 's/refs\\/heads\\///' | sed -E 's/\\W|_/-/g' | sed -e 's/\\//-/'",
-    "publish-canary": "lerna publish --force-publish --canary --preid alpha-$(pnpm --silent canary-preid) --dist-tag $(pnpm --silent current-branch)",
-    "publish-prerelease": "pnpm install && lerna publish prerelease --force-publish --dist-tag next --no-push && sleep 60 && git push --follow-tags",
-    "merge-main": "git checkout main && git pull && git checkout next && git pull && git checkout -b next-merge-$(date '+%Y-%m-%d') next && git merge main"
+    "build": "rollup --config rollup.config.ts --configPlugin rollup-plugin-swc3",
+    "dev": "pnpm build --watch",
+    "codegen:entrypoints": "tsx entrypoints.script.ts",
+    "benchmark": "tsc --project tsconfig.benchmark.json",
+    "lint": "eslint --cache --ext \".js,.ts,.tsx\" --ignore-path ../../.gitignore --report-unused-disable-directives src",
+    "ts-watch": "tsc --project tsconfig.watch.json"
   },
-  "dependencies": {
-    "@changesets/changelog-github": "^0.4.8",
-    "@changesets/cli": "^2.26.1",
-    "@ianvs/prettier-plugin-sort-imports": "^3.7.2",
-    "@manypkg/cli": "^0.20.0",
-    "@rollup/plugin-node-resolve": "^15.0.2",
-    "@swc/core": "1.3.3",
-    "@types/node": "^18.7.20",
-    "@types/prettier": "^2.7.2",
-    "@typescript-eslint/eslint-plugin": "^5.59.2",
-    "@typescript-eslint/parser": "^5.59.2",
-    "eslint": "^8.40.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-no-only-tests": "^3.1.0",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-turbo": "^1.9.3",
-    "eslint-plugin-unicorn": "47.0.0",
-    "express": "^4.17.1",
-    "fast-glob": "^3.2.12",
-    "hash-sum": "^2.0.0",
-    "lerna": "^5.6.2",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^2.8.8",
-    "prettier-plugin-tailwindcss": "^0.2.8",
-    "rollup": "^2.79.1",
-    "rollup-plugin-delete": "^2.0.0",
-    "rollup-plugin-multi-input": "^1.4.1",
-    "rollup-plugin-node-externals": "^5.1.3",
-    "rollup-plugin-swc3": "^0.8.1",
-    "rollup-plugin-typescript2": "^0.32.1",
-    "ts-prune": "^0.10.3",
-    "tsx": "^3.12.7",
-    "turbo": "^1.9.3",
-    "typescript": "^4.8.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "@tanstack/react-query": "4.18.0",
-      "@tanstack/react-query-devtools": "4.18.0",
-      "@trpc/client": "link:./packages/client",
-      "@trpc/next": "link:./packages/next",
-      "@trpc/react-query": "link:./packages/react-query",
-      "@trpc/server": "link:./packages/server",
-      "@examples/trpc-next-prisma-starter>@prisma/client": "https://registry.npmjs.com/@prisma/client/-/client-4.12.0.tgz?id=examplestrpc-next-prisma-starter",
-      "@examples/next-websockets-starter>@prisma/client": "https://registry.npmjs.com/@prisma/client/-/client-4.12.0.tgz?id=examplesnext-websockets-starter",
-      "@examples/trpc-next-prisma-todomvc>@prisma/client": "https://registry.npmjs.com/@prisma/client/-/client-4.12.0.tgz?id=examplestrpc-next-prisma-todomvc",
-      "@examples/legacy-next-starter>@prisma/client": "https://registry.npmjs.com/@prisma/client/-/client-4.12.0.tgz?id=exampleslegacy-next-starter",
-      "@examples/trpc-next-prisma-starter>prisma": "https://registry.npmjs.com/prisma/-/prisma-4.12.0.tgz?id=%40examplestrpc-next-prisma-starter",
-      "@examples/next-websockets-starter>prisma": "https://registry.npmjs.com/prisma/-/prisma-4.12.0.tgz?id=%40examplesnext-websockets-starter",
-      "@examples/trpc-next-prisma-todomvc>prisma": "https://registry.npmjs.com/prisma/-/prisma-4.12.0.tgz?id=%40examplestrpc-next-prisma-todomvc",
-      "@examples/legacy-next-starter>prisma": "https://registry.npmjs.com/prisma/-/prisma-4.12.0.tgz?id=%40exampleslegacy-next-starter",
-      "@types/testing-library__jest-dom": "link:./packages/tests/vendor/@types/testing-library__jest-dom"
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./adapters/aws-lambda": {
+      "import": "./dist/adapters/aws-lambda/index.mjs",
+      "require": "./dist/adapters/aws-lambda/index.js",
+      "default": "./dist/adapters/aws-lambda/index.js"
+    },
+    "./adapters/express": {
+      "import": "./dist/adapters/express.mjs",
+      "require": "./dist/adapters/express.js",
+      "default": "./dist/adapters/express.js"
+    },
+    "./adapters/fastify": {
+      "import": "./dist/adapters/fastify/index.mjs",
+      "require": "./dist/adapters/fastify/index.js",
+      "default": "./dist/adapters/fastify/index.js"
+    },
+    "./adapters/next": {
+      "import": "./dist/adapters/next.mjs",
+      "require": "./dist/adapters/next.js",
+      "default": "./dist/adapters/next.js"
+    },
+    "./adapters/node-http": {
+      "import": "./dist/adapters/node-http/index.mjs",
+      "require": "./dist/adapters/node-http/index.js",
+      "default": "./dist/adapters/node-http/index.js"
+    },
+    "./adapters/node-http/content-type/json": {
+      "import": "./dist/adapters/node-http/content-type/json/index.mjs",
+      "require": "./dist/adapters/node-http/content-type/json/index.js",
+      "default": "./dist/adapters/node-http/content-type/json/index.js"
+    },
+    "./adapters/node-http/content-type/form-data": {
+      "import": "./dist/adapters/node-http/content-type/form-data/index.mjs",
+      "require": "./dist/adapters/node-http/content-type/form-data/index.js",
+      "default": "./dist/adapters/node-http/content-type/form-data/index.js"
+    },
+    "./adapters/standalone": {
+      "import": "./dist/adapters/standalone.mjs",
+      "require": "./dist/adapters/standalone.js",
+      "default": "./dist/adapters/standalone.js"
+    },
+    "./adapters/ws": {
+      "import": "./dist/adapters/ws.mjs",
+      "require": "./dist/adapters/ws.js",
+      "default": "./dist/adapters/ws.js"
+    },
+    "./adapters/fetch": {
+      "import": "./dist/adapters/fetch/index.mjs",
+      "require": "./dist/adapters/fetch/index.js",
+      "default": "./dist/adapters/fetch/index.js"
+    },
+    "./http": {
+      "import": "./dist/http/index.mjs",
+      "require": "./dist/http/index.js",
+      "default": "./dist/http/index.js"
+    },
+    "./rpc": {
+      "import": "./dist/rpc/index.mjs",
+      "require": "./dist/rpc/index.js",
+      "default": "./dist/rpc/index.js"
+    },
+    "./observable": {
+      "import": "./dist/observable/index.mjs",
+      "require": "./dist/observable/index.js",
+      "default": "./dist/observable/index.js"
+    },
+    "./subscription": {
+      "import": "./dist/subscription.mjs",
+      "require": "./dist/subscription.js",
+      "default": "./dist/subscription.js"
+    },
+    "./shared": {
+      "import": "./dist/shared/index.mjs",
+      "require": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "package.json",
+    "adapters",
+    "http",
+    "rpc",
+    "observable",
+    "subscription",
+    "shared"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@fastify/websocket": "^7.1.2",
+    "@tanstack/react-query": "^4.18.0",
+    "@types/aws-lambda": "^8.10.97",
+    "@types/express": "^4.17.17",
+    "@types/hash-sum": "^1.0.0",
+    "@types/node": "^18.7.20",
+    "@types/react": "^18.2.6",
+    "@types/react-dom": "^18.2.4",
+    "@types/ws": "^8.2.0",
+    "@web3-storage/multipart-parser": "^1.0.0",
+    "aws-lambda": "^1.0.7",
+    "devalue": "^4.0.0",
+    "eslint": "^8.40.0",
+    "expect-type": "^0.15.0",
+    "express": "^4.17.1",
+    "fastify": "^4.13.0",
+    "fastify-plugin": "^4.5.0",
+    "hash-sum": "^2.0.0",
+    "myzod": "^1.3.1",
+    "next": "^13.3.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rollup": "^2.79.1",
+    "superjson": "^1.7.4",
+    "superstruct": "^1.0.0",
+    "tslib": "^2.5.0",
+    "tsx": "^3.12.7",
+    "typescript": "^4.8.3",
+    "vitest": "^0.28.5",
+    "ws": "^8.0.0",
+    "yup": "^1.0.0",
+    "zod": "^3.0.0"
   }
 }
