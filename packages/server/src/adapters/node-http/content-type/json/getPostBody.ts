@@ -1,16 +1,20 @@
-import { TRPCError } from '../../../error/TRPCError';
-import { NodeHTTPRequest } from '../types';
+import { TRPCError } from '../../../../error/TRPCError';
+import { BodyResult } from '../../../../http/contentType';
+import { NodeHTTPRequest } from '../../types';
 
 export async function getPostBody(opts: {
   req: NodeHTTPRequest;
   maxBodySize?: number;
-}) {
+}): Promise<BodyResult> {
   const { req, maxBodySize = Infinity } = opts;
-  return new Promise<
-    { ok: true; data: unknown } | { ok: false; error: TRPCError }
-  >((resolve) => {
+  return new Promise((resolve) => {
     if ('body' in req) {
-      resolve({ ok: true, data: req.body });
+      resolve({
+        ok: true,
+        data: req.body,
+        // If the request headers specifies a content-type, we assume that the body has been preprocessed
+        preprocessed: req.headers['content-type'] === 'application/json',
+      });
       return;
     }
     let body = '';
@@ -30,6 +34,7 @@ export async function getPostBody(opts: {
       resolve({
         ok: true,
         data: hasBody ? body : undefined,
+        preprocessed: false,
       });
     });
   });
